@@ -27,54 +27,86 @@ export const PRODUCT_DISPLAY_META: Record<
   string,
   {
     displayName: string;
+    shortCode: string;
     productId: "writtt" | "myterm" | "bycode" | "heapi";
     icon: string;
     accent: string;
     badgePt: string;
     badgeEn: string;
     badgeEs: string;
-    officialSiteFallback: string;
+    descPt: string;
+    descEn: string;
+    descEs: string;
+    officialUrl: string;
   }
 > = {
   "marcelomatz/writtt": {
     displayName: "Writtt",
+    shortCode: "WT",
     productId: "writtt",
     icon: "feather",
     accent: "#3b82f6",
     badgePt: "Estúdio Editorial & Cofre Local",
     badgeEn: "Editorial Studio & Local Vault",
     badgeEs: "Estudio Editorial y Bóveda Local",
-    officialSiteFallback: "https://www.writtt.com",
+    descPt:
+      "Estúdio de escrita focado em privacidade total, cofre criptografado offline no computador e assistente de IA local sem servidores externos.",
+    descEn:
+      "Privacy-first desktop writing studio with an offline encrypted local vault and optional local AI assistant with zero external servers.",
+    descEs:
+      "Estudio de escritura enfocado en privacidad total, bóveda cifrada offline en su equipo y asistente de IA local sin servidores externos.",
+    officialUrl: "https://www.writtt.com/",
   },
   "marcelomatz/myterm": {
     displayName: "MyTerm",
+    shortCode: "MT",
     productId: "myterm",
     icon: "terminal",
     accent: "#10b981",
     badgePt: "Terminal GPU & SSH Manager",
     badgeEn: "GPU Terminal & SSH Manager",
     badgeEs: "Terminal GPU y Gestor SSH",
-    officialSiteFallback: "https://myterm.marcelomatz.com.br",
+    descPt:
+      "Emulador de terminal acelerado por GPU, multiplexador de abas/painéis e gerenciador nativo de conexões SSH e túneis seguros.",
+    descEn:
+      "GPU-accelerated terminal emulator, split-pane workspace multiplexer, and native SSH session & tunnel manager.",
+    descEs:
+      "Emulador de terminal acelerado por GPU, multiplexador de pestañas/paneles y gestor nativo de sesiones y túneles SSH.",
+    officialUrl: "https://myterm.marcelomatz.com.br/",
   },
   "marcelomatz/bycode-releases": {
     displayName: "ByCode",
+    shortCode: "BC",
     productId: "bycode",
     icon: "code",
     accent: "#8b5cf6",
     badgePt: "Ambiente MDE / IDE Nativo",
     badgeEn: "Native MDE / IDE Workspace",
     badgeEs: "Entorno MDE / IDE Nativo",
-    officialSiteFallback: "https://bycode.marcelomatz.com.br",
+    descPt:
+      "Ambiente de desenvolvimento modular nativo de alta performance em Go e Wails, com edição de código ágil, Git integrado e baixo consumo de RAM.",
+    descEn:
+      "High-performance native modular development environment built with Go and Wails, featuring fast code editing, Git integration, and low memory usage.",
+    descEs:
+      "Entorno de desarrollo modular nativo de alto rendimiento en Go y Wails, con edición ágil, Git integrado y bajo consumo de memoria.",
+    officialUrl: "https://bycode.marcelomatz.com.br/",
   },
   "marcelomatz/Heapi": {
     displayName: "Heapi",
+    shortCode: "HP",
     productId: "heapi",
     icon: "api",
     accent: "#d946ef",
     badgePt: "Cliente REST, GraphQL & API Studio",
     badgeEn: "REST, GraphQL & API Studio",
     badgeEs: "Cliente REST, GraphQL y API Studio",
-    officialSiteFallback: "https://heapi-website.vercel.app/pt",
+    descPt:
+      "Cliente nativo de alta performance para inspeção e testes de APIs REST, GraphQL e WebSockets, amigável ao Git e com terminal integrado.",
+    descEn:
+      "High-performance native client for testing and inspecting REST, GraphQL, and WebSocket APIs, Git-friendly with an integrated terminal.",
+    descEs:
+      "Cliente nativo de alto rendimiento para pruebas e inspección de APIs REST, GraphQL y WebSockets, amigable con Git y con terminal integrado.",
+    officialUrl: "https://heapi.marcelomatz.com.br/",
   },
 };
 
@@ -148,10 +180,35 @@ export function getProductBadge(repo: string, locale: UiLocale): string {
   return trText(locale, meta.badgePt, meta.badgeEn, meta.badgeEs);
 }
 
+export function stripUnicodeEmojis(input: string): string {
+  return String(input || "")
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE0F}]/gu, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+export function getLocalizedProductDescription(
+  project: ProjectTelemetry,
+  locale: UiLocale
+): string {
+  const meta = PRODUCT_DISPLAY_META[project.repo];
+  if (meta) {
+    return trText(locale, meta.descPt, meta.descEn, meta.descEs);
+  }
+  const cleanRepoDesc = stripUnicodeEmojis(project.info.description);
+  return cleanRepoDesc || getProductBadge(project.repo, locale);
+}
+
 export function getOfficialSiteUrl(project: ProjectTelemetry): string {
+  const meta = PRODUCT_DISPLAY_META[project.repo];
+  if (meta?.officialUrl) {
+    return meta.officialUrl;
+  }
   const raw = (project.info.homepage || "").trim();
-  if (raw && /^https?:\/\//i.test(raw)) return raw;
-  return PRODUCT_DISPLAY_META[project.repo]?.officialSiteFallback || project.info.url;
+  if (raw && /^https?:\/\//i.test(raw) && !/\.vercel\.app/i.test(raw)) {
+    return raw;
+  }
+  return project.info.url;
 }
 
 export function cleanSha256Digest(digest: string): string {
@@ -275,6 +332,7 @@ export function computeRealAnalytics(
 
   const flatReleasesChrono: Array<{
     project: string;
+    shortCode: string;
     repo: string;
     release: ReleaseRecord;
     ts: number;
@@ -292,6 +350,7 @@ export function computeRealAnalytics(
     totalWatchers += proj.info.watchers;
 
     const repoTimestamps: number[] = [];
+    const shortCode = PRODUCT_DISPLAY_META[proj.repo]?.shortCode || getDisplayName(proj.repo).slice(0, 2).toUpperCase();
 
     for (const rel of proj.releases) {
       if (rel.prerelease) prereleaseCount++;
@@ -303,6 +362,7 @@ export function computeRealAnalytics(
 
       flatReleasesChrono.push({
         project: getDisplayName(proj.repo),
+        shortCode,
         repo: proj.repo,
         release: rel,
         ts,
@@ -363,6 +423,13 @@ export function computeRealAnalytics(
       ? Number((cadenceDeltasDays.reduce((s, d) => s + d, 0) / cadenceDeltasDays.length).toFixed(1))
       : null;
 
+  const osSublabels: Record<OsPlatform, string> = {
+    Windows: "x64 (.exe)",
+    macOS: "Universal (.dmg / .zip)",
+    Linux: "x64 (.tar.gz / bin)",
+    Outros: "Extra",
+  };
+
   const osOrder: OsPlatform[] = ["Windows", "macOS", "Linux", "Outros"];
   const osBreakdown: ShareSlice[] = osOrder
     .map((os) => {
@@ -370,6 +437,7 @@ export function computeRealAnalytics(
       return {
         key: os,
         label: os === "Outros" ? trText(locale, "Outros", "Other", "Otros") : os,
+        sublabel: osSublabels[os],
         count: entry.count,
         assetsCount: entry.assetsCount,
         bytesTransferred: entry.bytes,
@@ -379,25 +447,17 @@ export function computeRealAnalytics(
     })
     .filter((s) => s.count > 0 || s.assetsCount > 0);
 
+  // Concise labels prevent wrapping in Donut legends and stat cards
   const kindLabels: Record<PackageKind, string> = {
-    installer: trText(
-      locale,
-      "Instaladores (.exe / .dmg)",
-      "Installers (.exe / .dmg)",
-      "Instaladores (.exe / .dmg)"
-    ),
-    portable: trText(
-      locale,
-      "Executáveis Portáteis",
-      "Portable Executables",
-      "Ejecutables Portátiles"
-    ),
-    archive: trText(
-      locale,
-      "Pacotes Compactados (.zip / .tar.gz)",
-      "Compressed Archives (.zip / .tar.gz)",
-      "Paquetes Comprimidos (.zip / .tar.gz)"
-    ),
+    installer: trText(locale, "Instaladores", "Installers", "Instaladores"),
+    portable: trText(locale, "Portáteis", "Portable", "Portátiles"),
+    archive: trText(locale, "Compactados", "Archives", "Comprimidos"),
+  };
+
+  const kindSublabels: Record<PackageKind, string> = {
+    installer: ".exe · .dmg",
+    portable: trText(locale, "Executável direto", "Direct binary", "Ejecutable directo"),
+    archive: ".zip · .tar.gz",
   };
 
   const kindOrder: PackageKind[] = ["installer", "portable", "archive"];
@@ -407,6 +467,7 @@ export function computeRealAnalytics(
       return {
         key: kind,
         label: kindLabels[kind],
+        sublabel: kindSublabels[kind],
         count: entry.count,
         assetsCount: entry.assetsCount,
         bytesTransferred: entry.bytes,
@@ -416,11 +477,11 @@ export function computeRealAnalytics(
     })
     .filter((s) => s.count > 0 || s.assetsCount > 0);
 
-  // Chronological release trajectory (up to last 16 releases in true publication order)
-  const recentChrono = flatReleasesChrono.slice(-16);
+  // Odd slice count (11) ensures X-axis even-index ticks (0,2,4,6,8,10) never overlap at the tail
+  const recentChrono = flatReleasesChrono.slice(-11);
   const chronologicalSeries = {
     labels: recentChrono.map((r) =>
-      selectedRepo ? r.release.tag : `${r.project} ${r.release.tag}`
+      selectedRepo ? r.release.tag : `${r.shortCode} ${r.release.tag}`
     ),
     downloads: recentChrono.map((r) => r.release.totalDownloads),
     megabytesDelivered: recentChrono.map((r) =>
@@ -428,10 +489,9 @@ export function computeRealAnalytics(
     ),
   };
 
-  // Real binary size evolution across versions (MB)
   const binarySizeSeries = {
     labels: recentChrono.map((r) =>
-      selectedRepo ? r.release.tag : `${r.project} ${r.release.tag}`
+      selectedRepo ? r.release.tag : `${r.shortCode} ${r.release.tag}`
     ),
     windowsInstallerMb: recentChrono.map((r) => {
       const cov = inspectLatestPlatformCoverage(r.release);

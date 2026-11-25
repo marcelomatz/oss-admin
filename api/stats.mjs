@@ -1,6 +1,13 @@
 // Vercel Serverless Endpoint (`/api/stats` -> rewritten from `/api/oss/stats`)
 // Fetches 100% genuine GitHub repository + full release asset telemetry with edge caching.
 
+const CANONICAL_HOMEPAGES = {
+  "marcelomatz/writtt": "https://www.writtt.com/",
+  "marcelomatz/myterm": "https://myterm.marcelomatz.com.br/",
+  "marcelomatz/bycode-releases": "https://bycode.marcelomatz.com.br/",
+  "marcelomatz/Heapi": "https://heapi.marcelomatz.com.br/",
+};
+
 const TRACKED_REPOS = [
   "marcelomatz/writtt",
   "marcelomatz/myterm",
@@ -89,7 +96,7 @@ export default async function handler(req, res) {
           name: rData.name || info.name,
           fullName: rData.full_name || repo,
           description: rData.description || "",
-          homepage: rData.homepage || "",
+          homepage: CANONICAL_HOMEPAGES[repo] || rData.homepage || "",
           stars: Number(rData.stargazers_count || 0),
           forks: Number(rData.forks_count || 0),
           watchers: Number(rData.subscribers_count ?? rData.watchers_count ?? 0),

@@ -11,8 +11,8 @@ import {
   formatBytesHuman,
   formatShortDate,
   getDisplayName,
+  getLocalizedProductDescription,
   getOfficialSiteUrl,
-  getProductBadge,
   getProductColor,
   inspectLatestPlatformCoverage,
   PRODUCT_DISPLAY_META,
@@ -54,30 +54,27 @@ export function renderDownloadControlSection(
       const latest = proj.releases[0];
       const cov = inspectLatestPlatformCoverage(latest);
       const coveredSlots = countCoveredPlatformSlots(cov);
-
-      const desc =
-        proj.info.description ||
-        getProductBadge(proj.repo, locale);
+      const desc = getLocalizedProductDescription(proj, locale);
 
       if (!latest) {
         return `
           <article class="matz-card matz-beam-top oss-control-card">
             <div class="oss-control-header">
-              <div class="oss-control-identity">
-                <span class="oss-product-glyph" style="color:${color};border-color:${color}44;">
-                  ${matzIcon(iconName, 18)}
-                </span>
-                <div>
+              <div class="oss-control-top">
+                <div class="oss-control-identity">
+                  <span class="oss-product-glyph" style="color:${color};border-color:${color}44;">
+                    ${matzIcon(iconName, 18)}
+                  </span>
                   <div class="oss-control-title-row">
                     <h3 class="oss-control-name">${escHtml(name)}</h3>
                     <span class="matz-badge matz-badge-amber">${trText(locale, "Sem versões públicas", "No public releases", "Sin versiones públicas")}</span>
                   </div>
-                  <p class="oss-control-desc">${escHtml(desc)}</p>
                 </div>
+                <a href="${escHtml(proj.info.url)}" target="_blank" rel="noopener noreferrer" class="oss-icon-action">
+                  ${matzIcon("external", 12)} GitHub
+                </a>
               </div>
-              <a href="${escHtml(proj.info.url)}" target="_blank" rel="noopener noreferrer" class="oss-icon-action">
-                ${matzIcon("external", 12)} GitHub
-              </a>
+              <p class="oss-control-desc">${escHtml(desc)}</p>
             </div>
           </article>
         `;
@@ -147,56 +144,60 @@ export function renderDownloadControlSection(
 
       return `
         <article class="matz-card matz-beam-top oss-control-card">
-          <div class="oss-control-header">
-            <div class="oss-control-identity">
-              <span class="oss-product-glyph" style="color:${color};border-color:${color}55;">
-                ${matzIcon(iconName, 18)}
-              </span>
-              <div>
-                <div class="oss-control-title-row">
-                  <h3 class="oss-control-name">${escHtml(name)}</h3>
-                  <span class="oss-release-tag">${escHtml(latest.tag)}</span>
-                  <span class="matz-badge ${coverageBadgeClass}">
-                    ${coveredSlots}/5 ${trText(locale, "formatos ativos", "active formats", "formatos activos")}
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="oss-control-header">
+              <div class="oss-control-top">
+                <div class="oss-control-identity">
+                  <span class="oss-product-glyph" style="color:${color};border-color:${color}55;">
+                    ${matzIcon(iconName, 18)}
                   </span>
+                  <div class="oss-control-title-row">
+                    <h3 class="oss-control-name">${escHtml(name)}</h3>
+                    <span class="oss-release-tag">${escHtml(latest.tag)}</span>
+                    <span class="matz-badge ${coverageBadgeClass}">
+                      ${coveredSlots}/5 ${trText(locale, "formatos ativos", "active formats", "formatos activos")}
+                    </span>
+                  </div>
                 </div>
-                <p class="oss-control-desc">${escHtml(desc)}</p>
+
+                <div class="oss-control-links">
+                  ${
+                    !selectedRepo
+                      ? `<button type="button" class="oss-icon-action" data-select-repo="${escHtml(proj.repo)}" title="${trText(locale, "Focar analytics neste software", "Focus analytics on this software", "Enfocar analítica en este software")}">
+                          ${matzIcon("chart", 12)}
+                          <span>${trText(locale, "Focar", "Focus", "Enfocar")}</span>
+                        </button>`
+                      : ""
+                  }
+                  <a href="${escHtml(officialUrl)}" target="_blank" rel="noopener noreferrer" class="oss-icon-action" title="${escHtml(officialUrl)}">
+                    ${matzIcon("globe", 12)}
+                    <span>${trText(locale, "Site Oficial", "Official Site", "Sitio Oficial")}</span>
+                  </a>
+                  <a href="${escHtml(latest.url)}" target="_blank" rel="noopener noreferrer" class="oss-icon-action">
+                    ${matzIcon("external", 12)}
+                    <span>Release</span>
+                  </a>
+                </div>
               </div>
+
+              <p class="oss-control-desc">${escHtml(desc)}</p>
             </div>
 
-            <div class="oss-control-links">
-              ${
-                !selectedRepo
-                  ? `<button type="button" class="oss-icon-action" data-select-repo="${escHtml(proj.repo)}" title="${trText(locale, "Focar analytics neste software", "Focus analytics on this software", "Enfocar analítica en este software")}">
-                      ${matzIcon("chart", 12)}
-                      <span>${trText(locale, "Focar", "Focus", "Enfocar")}</span>
-                    </button>`
-                  : ""
-              }
-              <a href="${escHtml(officialUrl)}" target="_blank" rel="noopener noreferrer" class="oss-icon-action">
-                ${matzIcon("globe", 12)}
-                <span>${trText(locale, "Site", "Website", "Sitio")}</span>
-              </a>
-              <a href="${escHtml(latest.url)}" target="_blank" rel="noopener noreferrer" class="oss-icon-action">
-                ${matzIcon("external", 12)}
-                <span>Release</span>
-              </a>
+            <div class="oss-slot-list">
+              ${slotRowsHtml}
+              ${extraRowsHtml}
             </div>
-          </div>
-
-          <div class="oss-slot-list">
-            ${slotRowsHtml}
-            ${extraRowsHtml}
           </div>
 
           <div class="oss-control-footer">
-            <span>
+            <span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;">
               ${matzIcon("calendar", 12)}
-              ${trText(locale, "Publicada em", "Published on", "Publicada el")}
+              <span>${trText(locale, "Publicada em", "Published on", "Publicada el")}</span>
               <strong style="color:var(--text-secondary);">${escHtml(formatShortDate(latest.publishedAt, locale))}</strong>
-              · ${trText(locale, "Versão atual:", "Active release:", "Versión actual:")}
+              <span>·</span>
+              <span>${trText(locale, "Versão atual:", "Active release:", "Versión actual:")}</span>
               <strong class="matz-tabular" style="color:var(--text-primary);">${latest.totalDownloads.toLocaleString(locale)}</strong>
-              ${trText(locale, "downloads", "downloads", "descargas")}
+              <span>${trText(locale, "downloads", "downloads", "descargas")}</span>
             </span>
             <span class="matz-tabular">
               ${trText(locale, "Acumulado histórico:", "All-time total:", "Acumulado histórico:")}
@@ -244,18 +245,17 @@ function renderSlotRow(
   if (!asset) {
     return `
       <div class="oss-slot-row is-missing">
-        <div class="oss-slot-platform">
-          ${matzIcon(iconName, 13)}
-          <span>${escHtml(slotLabel)}</span>
+        <div class="oss-slot-main">
+          <div class="oss-slot-platform">
+            ${matzIcon(iconName, 13)}
+            <span>${escHtml(slotLabel)}</span>
+          </div>
+          <div class="oss-slot-file-meta">
+            <span class="oss-slot-filename">${trText(locale, "Não incluído nesta versão", "Not included in this release", "No incluido en esta versión")}</span>
+          </div>
         </div>
-        <div class="oss-slot-file">
-          <span class="oss-slot-filename">${trText(locale, "Não incluído nesta versão", "Not included in this release", "No incluido en esta versión")}</span>
-        </div>
-        <div class="oss-slot-stats">
-          <span>—</span>
-        </div>
-        <div class="oss-slot-actions">
-          <span class="matz-badge" style="background:transparent;border-color:var(--border);color:var(--text-muted);font-size:10px;">
+        <div class="oss-slot-right">
+          <span class="matz-badge" style="background:transparent;border-color:var(--border);color:var(--text-muted);font-size:10.5px;">
             ${trText(locale, "Ausente", "Missing", "Ausente")}
           </span>
         </div>
@@ -268,72 +268,74 @@ function renderSlotRow(
 
   return `
     <div class="oss-slot-row">
-      <div class="oss-slot-platform">
-        ${matzIcon(iconName, 13)}
-        <span>${escHtml(slotLabel)}</span>
+      <div class="oss-slot-main">
+        <div class="oss-slot-platform">
+          ${matzIcon(iconName, 13)}
+          <span>${escHtml(slotLabel)}</span>
+          <span class="oss-slot-size-pill matz-tabular">${escHtml(formatBytesHuman(asset.sizeBytes))}</span>
+        </div>
+
+        <div class="oss-slot-file-meta">
+          <span class="oss-slot-filename" title="${escHtml(asset.name)}">${escHtml(asset.name)}</span>
+          ${
+            sha
+              ? `<span class="oss-slot-sha" title="SHA-256: ${escHtml(sha)}">
+                  ${matzIcon("badge-check", 11)}
+                  <span>${escHtml(sha.slice(0, 8))}…</span>
+                </span>`
+              : ""
+          }
+        </div>
       </div>
 
-      <div class="oss-slot-file">
-        <span class="oss-slot-filename" title="${escHtml(asset.name)}">${escHtml(asset.name)}</span>
-        ${
-          sha
-            ? `<span class="oss-slot-sha" title="SHA-256: ${escHtml(sha)}">
-                ${matzIcon("badge-check", 11)}
-                <span>sha256:${escHtml(sha.slice(0, 10))}…${escHtml(sha.slice(-6))}</span>
-              </span>`
-            : `<span class="oss-slot-sha">${trText(locale, "Sem hash SHA-256 na API", "No SHA-256 digest in API", "Sin hash SHA-256 en API")}</span>`
-        }
-      </div>
+      <div class="oss-slot-right">
+        <span class="oss-slot-dl matz-tabular">${asset.downloads.toLocaleString(locale)} dl</span>
 
-      <div class="oss-slot-stats matz-tabular">
-        <strong style="color:var(--text-primary);">${asset.downloads.toLocaleString(locale)} dl</strong>
-        <span style="color:var(--text-muted);">${escHtml(formatBytesHuman(asset.sizeBytes))}</span>
-      </div>
+        <div class="oss-slot-actions">
+          <button
+            type="button"
+            class="oss-icon-action"
+            data-copy-text="${escHtml(latestUrl)}"
+            data-copy-label="${escHtml(trText(locale, "Link permanente /latest/ copiado", "Permanent /latest/ link copied", "Enlace permanente /latest/ copiado"))}"
+            title="${escHtml(trText(locale, "Copiar link permanente /releases/latest/download/...", "Copy permanent /releases/latest/download/... URL", "Copiar enlace permanente /releases/latest/download/..."))}"
+          >
+            ${matzIcon("link", 11)}
+            <span>/latest</span>
+          </button>
 
-      <div class="oss-slot-actions">
-        <button
-          type="button"
-          class="oss-icon-action"
-          data-copy-text="${escHtml(latestUrl)}"
-          data-copy-label="${escHtml(trText(locale, "Link permanente /latest/ copiado", "Permanent /latest/ link copied", "Enlace permanente /latest/ copiado"))}"
-          title="${escHtml(trText(locale, "Copiar link permanente /releases/latest/download/...", "Copy permanent /releases/latest/download/... URL", "Copiar enlace permanente /releases/latest/download/..."))}"
-        >
-          ${matzIcon("link", 11)}
-          <span>/latest</span>
-        </button>
+          <button
+            type="button"
+            class="oss-icon-action"
+            data-copy-text="${escHtml(asset.downloadUrl)}"
+            data-copy-label="${escHtml(trText(locale, `Link fixo (${tag}) copiado`, `Pinned (${tag}) link copied`, `Enlace fijo (${tag}) copiado`))}"
+            title="${escHtml(trText(locale, `Copiar URL fixa da versão ${tag}`, `Copy pinned ${tag} URL`, `Copiar URL fija de la versión ${tag}`))}"
+          >
+            ${matzIcon("copy", 11)}
+          </button>
 
-        <button
-          type="button"
-          class="oss-icon-action"
-          data-copy-text="${escHtml(asset.downloadUrl)}"
-          data-copy-label="${escHtml(trText(locale, `Link fixo (${tag}) copiado`, `Pinned (${tag}) link copied`, `Enlace fijo (${tag}) copiado`))}"
-          title="${escHtml(trText(locale, `Copiar URL fixa da versão ${tag}`, `Copy pinned ${tag} URL`, `Copiar URL fija de la versión ${tag}`))}"
-        >
-          ${matzIcon("copy", 11)}
-        </button>
+          ${
+            sha
+              ? `<button
+                  type="button"
+                  class="oss-icon-action"
+                  data-copy-text="sha256:${escHtml(sha)}"
+                  data-copy-label="${escHtml(trText(locale, "Hash SHA-256 copiado", "SHA-256 hash copied", "Hash SHA-256 copiado"))}"
+                  title="Copiar SHA-256"
+                >
+                  ${matzIcon("fingerprint", 11)}
+                </button>`
+              : ""
+          }
 
-        ${
-          sha
-            ? `<button
-                type="button"
-                class="oss-icon-action"
-                data-copy-text="sha256:${escHtml(sha)}"
-                data-copy-label="${escHtml(trText(locale, "Hash SHA-256 copiado", "SHA-256 hash copied", "Hash SHA-256 copiado"))}"
-                title="Copiar SHA-256"
-              >
-                ${matzIcon("fingerprint", 11)}
-              </button>`
-            : ""
-        }
-
-        <a
-          href="${escHtml(asset.downloadUrl)}"
-          class="oss-icon-action is-primary"
-          title="${escHtml(trText(locale, "Baixar binário oficial", "Download official binary", "Descargar binario oficial"))}"
-        >
-          ${matzIcon("download", 11)}
-          <span>${trText(locale, "Baixar", "Download", "Descargar")}</span>
-        </a>
+          <a
+            href="${escHtml(asset.downloadUrl)}"
+            class="oss-icon-action is-primary"
+            title="${escHtml(trText(locale, "Baixar binário oficial", "Download official binary", "Descargar binario oficial"))}"
+          >
+            ${matzIcon("download", 11)}
+            <span>${trText(locale, "Baixar", "Download", "Descargar")}</span>
+          </a>
+        </div>
       </div>
     </div>
   `;

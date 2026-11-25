@@ -4,10 +4,10 @@ Painel unificado de controle de downloads, auditoria de binários multiplataform
 
 ## Softwares Monitorados
 
-- **[Writtt](https://github.com/marcelomatz/writtt)** — Estúdio editorial offline com cofre criptografado local (`writtt.com`)
-- **[MyTerm](https://github.com/marcelomatz/myterm)** — Terminal acelerado por GPU e gerenciador SSH (`myterm.marcelomatz.com.br`)
-- **[ByCode](https://github.com/marcelomatz/bycode-releases)** — Ambiente MDE / IDE nativo (`bycode.marcelomatz.com.br`)
-- **[Heapi](https://github.com/marcelomatz/Heapi)** — Cliente REST, GraphQL e API Studio (`heapi-website.vercel.app`)
+- **[Writtt](https://github.com/marcelomatz/writtt)** — Estúdio editorial offline com cofre criptografado local (`https://www.writtt.com/`)
+- **[MyTerm](https://github.com/marcelomatz/myterm)** — Terminal acelerado por GPU e gerenciador SSH (`https://myterm.marcelomatz.com.br/`)
+- **[ByCode](https://github.com/marcelomatz/bycode-releases)** — Ambiente MDE / IDE nativo (`https://bycode.marcelomatz.com.br/`)
+- **[Heapi](https://github.com/marcelomatz/Heapi)** — Cliente REST, GraphQL e API Studio (`https://heapi.marcelomatz.com.br/`)
 
 ## Política Estrita de Telemetria Real (Zero Dados Sintéticos)
 

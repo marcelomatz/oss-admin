@@ -12,6 +12,13 @@ import (
 	"time"
 )
 
+var canonicalHomepages = map[string]string{
+	"marcelomatz/writtt":          "https://www.writtt.com/",
+	"marcelomatz/myterm":          "https://myterm.marcelomatz.com.br/",
+	"marcelomatz/bycode-releases": "https://bycode.marcelomatz.com.br/",
+	"marcelomatz/Heapi":           "https://heapi.marcelomatz.com.br/",
+}
+
 var trackedRepos = []string{
 	"marcelomatz/writtt",
 	"marcelomatz/myterm",
@@ -211,11 +218,15 @@ func fetchGitHubStats(force bool) TelemetryPayload {
 				if rData.License != nil && rData.License.SpdxID != "NOASSERTION" {
 					lic = rData.License.SpdxID
 				}
+				homeURL := rData.Homepage
+				if canonical, ok := canonicalHomepages[repoSlug]; ok {
+					homeURL = canonical
+				}
 				info = RepoInfo{
 					Name:          rData.Name,
 					FullName:      rData.FullName,
 					Description:   rData.Description,
-					Homepage:      rData.Homepage,
+					Homepage:      homeURL,
 					Stars:         rData.StargazersCount,
 					Forks:         rData.ForksCount,
 					Watchers:      rData.SubscribersCount,

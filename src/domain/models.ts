@@ -74,6 +74,7 @@ export interface TelemetrySnapshot {
 export interface ShareSlice {
   key: string;
   label: string;
+  sublabel?: string;
   count: number;
   assetsCount: number;
   bytesTransferred: number;

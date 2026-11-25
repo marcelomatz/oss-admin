@@ -6,6 +6,7 @@
 import {
   classifyAssetOS,
   classifyPackageKind,
+  PRODUCT_DISPLAY_META,
   ProjectTelemetry,
   ReleaseAssetItem,
   ReleaseRecord,
@@ -14,7 +15,7 @@ import {
   TRACKED_OSS_REPOS,
 } from "../domain";
 
-const STORAGE_CACHE_KEY = "oss-admin:telemetry-snapshot:v2.1";
+const STORAGE_CACHE_KEY = "oss-admin:telemetry-snapshot:v2.2";
 const CLIENT_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 interface CachedEnvelope {
@@ -99,7 +100,7 @@ async function fetchDirectFromGitHub(): Promise<TelemetrySnapshot> {
         name: String(rData.name || fallbackName),
         fullName: String(rData.full_name || repo),
         description: String(rData.description || ""),
-        homepage: String(rData.homepage || ""),
+        homepage: PRODUCT_DISPLAY_META[repo]?.officialUrl || String(rData.homepage || ""),
         stars: Number(rData.stargazers_count || 0),
         forks: Number(rData.forks_count || 0),
         watchers: Number(rData.subscribers_count ?? rData.watchers_count ?? 0),

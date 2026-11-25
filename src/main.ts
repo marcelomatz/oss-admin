@@ -19,6 +19,7 @@ import {
   formatBytesHuman,
   formatDateTime,
   getDisplayName,
+  getLocalizedProductDescription,
   getProductBadge,
   getProductColor,
   normalizeUiLocale,
@@ -191,10 +192,10 @@ function renderPortal(): void {
       "Telemetría 100% determinista y control de distribución binaria en tiempo real mediante GitHub REST API — cero métricas sintéticas."
     ),
     links: [
-      { label: "Writtt", href: "https://www.writtt.com", external: true },
-      { label: "MyTerm", href: "https://myterm.marcelomatz.com.br", external: true },
-      { label: "ByCode", href: "https://bycode.marcelomatz.com.br", external: true },
-      { label: "Heapi", href: "https://heapi-website.vercel.app/pt", external: true },
+      { label: "Writtt", href: "https://www.writtt.com/", external: true },
+      { label: "MyTerm", href: "https://myterm.marcelomatz.com.br/", external: true },
+      { label: "ByCode", href: "https://bycode.marcelomatz.com.br/", external: true },
+      { label: "Heapi", href: "https://heapi.marcelomatz.com.br/", external: true },
       { label: "GitHub @marcelomatz", href: "https://github.com/marcelomatz", external: true },
     ],
   });
@@ -445,7 +446,7 @@ function renderPortal(): void {
       );
 
   const heroSubtitle = selectedProjectObj
-    ? selectedProjectObj.info.description || getProductBadge(selectedProjectObj.repo, locale)
+    ? getLocalizedProductDescription(selectedProjectObj, locale)
     : trText(
         locale,
         "Central unificada de auditoria de releases, links oficiais de distribuição multiplataforma e métricas reais verificadas diretamente na API do GitHub para Writtt, MyTerm, ByCode e Heapi.",

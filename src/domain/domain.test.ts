@@ -7,6 +7,7 @@ import {
   computeRealAnalytics,
   countCoveredPlatformSlots,
   formatBytesHuman,
+  getOfficialSiteUrl,
   inspectLatestPlatformCoverage,
   normalizeUiLocale,
   ProjectTelemetry,
@@ -170,8 +171,35 @@ describe("Layer 1 — Pure Deterministic Analytics Engine", () => {
     expect(summary.averageDownloadsPerRelease).toBe(50);
     expect(summary.averageReleaseCadenceDays).toBe(10);
     expect(summary.latestRelease?.tag).toBe("v0.2.0");
-    expect(summary.chronologicalSeries.labels).toEqual(["Writtt v0.1.0", "Writtt v0.2.0"]);
+    expect(summary.chronologicalSeries.labels).toEqual(["WT v0.1.0", "WT v0.2.0"]);
     expect(summary.chronologicalSeries.downloads).toEqual([100, 0]);
+  });
+
+  it("enforces official custom domains instead of stale vercel.app URLs", () => {
+    const heapiProj: ProjectTelemetry = {
+      repo: "marcelomatz/Heapi",
+      info: {
+        name: "Heapi",
+        fullName: "marcelomatz/Heapi",
+        description: "",
+        homepage: "https://heapi-website.vercel.app/pt",
+        stars: 2,
+        forks: 0,
+        watchers: 1,
+        openIssues: 0,
+        sizeKb: 1000,
+        language: "Go",
+        license: "MIT",
+        defaultBranch: "main",
+        createdAt: "",
+        pushedAt: "",
+        url: "https://github.com/marcelomatz/Heapi",
+      },
+      totalDownloads: 10,
+      totalBytesTransferred: 0,
+      releases: [],
+    };
+    expect(getOfficialSiteUrl(heapiProj)).toBe("https://heapi.marcelomatz.com.br/");
   });
 
   it("handles completely empty or zero-download snapshots without NaN or fake baselines", () => {

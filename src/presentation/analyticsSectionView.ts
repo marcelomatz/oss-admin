@@ -38,16 +38,17 @@ function renderMiniBreakdownStrip(slices: ShareSlice[], locale: UiLocale): strin
           <div class="oss-mini-stat-box">
             <div class="oss-mini-stat-head">
               <span style="display:inline-flex;align-items:center;gap:6px;">
-                <span style="width:7px;height:7px;border-radius:50%;background:${s.color};"></span>
+                <span style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0;"></span>
                 <span>${escHtml(s.label)}</span>
               </span>
-              <span class="matz-tabular">${s.percentage.toFixed(1)}%</span>
+              <span class="matz-tabular" style="color:var(--text-secondary);">${s.percentage.toFixed(1)}%</span>
             </div>
             <div class="oss-mini-stat-val matz-tabular">
               ${s.count.toLocaleString(locale)} <span style="font-size:11px;font-weight:500;color:var(--text-muted);">dl</span>
             </div>
             <div class="oss-mini-stat-sub matz-tabular">
-              ${escHtml(formatBytesHuman(s.bytesTransferred))} · ${s.assetsCount} ${trText(locale, "binários", "binaries", "binarios")}
+              <span>${escHtml(formatBytesHuman(s.bytesTransferred))} · ${s.assetsCount} ${trText(locale, "binários", "binaries", "binarios")}</span>
+              ${s.sublabel ? `<span style="color:var(--text-secondary);">${escHtml(s.sublabel)}</span>` : ""}
             </div>
           </div>
         `
@@ -97,8 +98,23 @@ export function renderAnalyticsSectionSkeleton(
       </div>
 
       <div class="oss-analytics-bottom">
-        <div class="oss-analytics-stack" style="gap:16px;">
-          <div id="chart-chrono-area"></div>
+        <div class="oss-analytics-stack" style="gap:20px;">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="oss-chart-mode-bar">
+              <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">
+                ${trText(locale, "Métrica da série cronológica:", "Chronological series metric:", "Métrica de la serie cronológica:")}
+              </span>
+              <div class="oss-chart-mode-pills" role="group">
+                <button type="button" class="oss-mode-pill is-active" data-chrono-mode="downloads">
+                  ${trText(locale, "Downloads por Versão", "Downloads per Release", "Descargas por Versión")}
+                </button>
+                <button type="button" class="oss-mode-pill" data-chrono-mode="mb">
+                  ${trText(locale, "Tráfego Entregue (MB)", "Delivered Traffic (MB)", "Tráfico Entregado (MB)")}
+                </button>
+              </div>
+            </div>
+            <div id="chart-chrono-area"></div>
+          </div>
           ${selectedRepo ? '<div id="chart-binary-size-area"></div>' : ""}
         </div>
 
@@ -118,14 +134,14 @@ function renderEcosystemComparisonCard(
   const ranked = [...projects].sort((a, b) => b.totalDownloads - a.totalDownloads);
 
   return `
-    <div class="matz-card matz-beam-top" style="display:flex;flex-direction:column;gap:14px;height:100%;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+    <div class="matz-card matz-beam-top" style="display:flex;flex-direction:column;gap:16px;padding:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <div>
-          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">
+          <div style="font-size:14.5px;font-weight:700;color:var(--text-primary);">
             ${trText(locale, "Participação por Software no Ecossistema", "Ecosystem Share by Software", "Participación por Software en el Ecosistema")}
           </div>
-          <div style="font-size:11.5px;color:var(--text-muted);">
-            ${trText(locale, "Comparativo real de downloads, tráfego e versões publicadas", "Real comparison of downloads, bandwidth, and published releases", "Comparativa real de descargas, tráfico y versiones publicadas")}
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
+            ${trText(locale, "Comparativo real de downloads, tráfego e versões", "Real comparison of downloads, bandwidth, and releases", "Comparativa real de descargas, tráfico y versiones")}
           </div>
         </div>
         <span class="matz-badge">${ranked.length} softwares</span>
@@ -202,13 +218,13 @@ function renderSingleSoftwareTopAssetsCard(
   const color = getProductColor(proj.repo);
 
   return `
-    <div class="matz-card matz-beam-top" style="display:flex;flex-direction:column;gap:14px;height:100%;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+    <div class="matz-card matz-beam-top" style="display:flex;flex-direction:column;gap:16px;padding:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <div>
-          <div style="font-size:14px;font-weight:700;color:var(--text-primary);">
+          <div style="font-size:14.5px;font-weight:700;color:var(--text-primary);">
             ${trText(locale, "Binários Mais Baixados do Software", "Most Downloaded Software Binaries", "Binarios Más Descargados del Software")}
           </div>
-          <div style="font-size:11.5px;color:var(--text-muted);">
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
             ${trText(locale, "Ranking histórico real por executável e versão", "All-time real ranking by executable and release", "Ranking histórico real por ejecutable y versión")}
           </div>
         </div>
@@ -225,9 +241,9 @@ function renderSingleSoftwareTopAssetsCard(
                   return `
                     <div class="oss-compare-item">
                       <div class="oss-compare-top">
-                        <div style="min-width:0;display:flex;align-items:center;gap:6px;">
+                        <div style="min-width:0;display:flex;align-items:center;gap:7px;">
                           <span class="oss-scope-tag">${escHtml(tag)}</span>
-                          <code class="oss-slot-filename" style="max-width:210px;" title="${escHtml(asset.name)}">${escHtml(asset.name)}</code>
+                          <code class="oss-slot-filename" style="max-width:240px;" title="${escHtml(asset.name)}">${escHtml(asset.name)}</code>
                         </div>
                         <strong class="matz-tabular" style="font-size:12.5px;color:var(--text-primary);">
                           ${asset.downloads.toLocaleString(locale)} dl
@@ -329,32 +345,56 @@ export function mountRealAnalyticsCharts(
         ? [summary.chronologicalSeries.megabytesDelivered[0], summary.chronologicalSeries.megabytesDelivered[0]]
         : [0, 0];
 
-    renderInteractiveAreaChart(chronoMount, {
-      title: trText(
-        locale,
-        "Trajetória Real de Downloads e Tráfego (MB) por Lançamento",
-        "Real Downloads & Delivered Traffic (MB) Trajectory per Release",
-        "Trayectoria Real de Descargas y Tráfico (MB) por Lanzamiento"
-      ),
-      subtitle: trText(
-        locale,
-        "Ordem cronológica exata de publicação no GitHub Releases (passe o cursor para inspecionar)",
-        "Exact chronological publication order on GitHub Releases (hover to inspect)",
-        "Orden cronológico exacto de publicación en GitHub Releases (pase el cursor para inspeccionar)"
-      ),
-      labels,
-      series: [
-        {
-          name: trText(locale, "Downloads", "Downloads", "Descargas"),
-          color: selectedRepo ? getProductColor(selectedRepo) : "#8b5cf6",
-          data: dlData,
-        },
-        {
-          name: trText(locale, "Volume Entregue (MB)", "Volume Delivered (MB)", "Volumen Entregado (MB)"),
-          color: "#06b6d4",
-          data: mbData,
-        },
-      ],
+    const renderChronoByMode = (mode: "downloads" | "mb") => {
+      const isMb = mode === "mb";
+      renderInteractiveAreaChart(chronoMount, {
+        title: isMb
+          ? trText(
+              locale,
+              "Volume Real Entregue (MB) por Lançamento",
+              "Real Delivered Volume (MB) per Release",
+              "Volumen Real Entregado (MB) por Lanzamiento"
+            )
+          : trText(
+              locale,
+              "Downloads Verificados por Lançamento",
+              "Verified Downloads per Release",
+              "Descargas Verificadas por Lanzamiento"
+            ),
+        subtitle: trText(
+          locale,
+          "Ordem cronológica de publicação no GitHub Releases (passe o cursor para inspecionar)",
+          "Chronological publication order on GitHub Releases (hover to inspect)",
+          "Orden cronológico de publicación en GitHub Releases (pase el cursor para inspeccionar)"
+        ),
+        labels,
+        unit: isMb ? " MB" : " dl",
+        series: [
+          isMb
+            ? {
+                name: trText(locale, "Tráfego (MB)", "Traffic (MB)", "Tráfico (MB)"),
+                color: "#06b6d4",
+                data: mbData,
+              }
+            : {
+                name: trText(locale, "Downloads", "Downloads", "Descargas"),
+                color: selectedRepo ? getProductColor(selectedRepo) : "#8b5cf6",
+                data: dlData,
+              },
+        ],
+      });
+    };
+
+    renderChronoByMode("downloads");
+
+    root.querySelectorAll<HTMLButtonElement>("[data-chrono-mode]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.chronoMode === "mb" ? "mb" : "downloads";
+        root.querySelectorAll<HTMLButtonElement>("[data-chrono-mode]").forEach((b) => {
+          b.classList.toggle("is-active", b === btn);
+        });
+        renderChronoByMode(mode);
+      });
     });
   }
 
@@ -374,15 +414,15 @@ export function mountRealAnalyticsCharts(
     renderInteractiveAreaChart(sizeMount, {
       title: trText(
         locale,
-        "Evolução Real do Tamanho dos Binários (MB) entre Versões",
-        "Real Binary Footprint Evolution (MB) Across Releases",
-        "Evolución Real del Tamaño de Binarios (MB) entre Versiones"
+        "Tamanho Real dos Binários (MB) entre Versões",
+        "Real Binary Footprint (MB) Across Releases",
+        "Tamaño Real de Binarios (MB) entre Versiones"
       ),
       subtitle: trText(
         locale,
-        "Acompanhamento de peso dos pacotes compilados em Windows, macOS e Linux",
-        "Compiled package footprint tracking across Windows, macOS, and Linux",
-        "Seguimiento del peso de paquetes compilados en Windows, macOS y Linux"
+        "Peso dos pacotes compilados em Windows, macOS e Linux",
+        "Compiled package footprint across Windows, macOS, and Linux",
+        "Peso de paquetes compilados en Windows, macOS y Linux"
       ),
       labels,
       unit: " MB",
