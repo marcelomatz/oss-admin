@@ -173,6 +173,12 @@ export default async function handler(req, res) {
     })
   );
 
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   if (!forceRefresh) {
     res.setHeader("Cache-Control", "public, s-maxage=600, stale-while-revalidate=3600");
   } else {
